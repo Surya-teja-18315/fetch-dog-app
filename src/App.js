@@ -1,15 +1,17 @@
+// App.js
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import DogSearchPage from './pages/DogSearchPage';
-import Login from './pages/Login';
+import LoginPage from './pages/LoginPage';
+import SearchPage from './pages/SearchPage';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/search" element={<DogSearchPage />} />
-      </Routes>
+      <div className="bg-gray-100 min-h-screen">
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/search" element={<SearchPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
