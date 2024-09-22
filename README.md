@@ -1,5 +1,7 @@
 # DogAdopt - Find Your Perfect Furry Friend
 
+[Live Demo](https://surya-teja-18315.github.io/fetch-dog-app/)
+
 Welcome to **DogAdopt**, a web application that helps users find and adopt dogs by browsing available breeds, filtering based on location, and more. This app was built using **React** and is deployed to **GitHub Pages**.
 
 ## Table of Contents
