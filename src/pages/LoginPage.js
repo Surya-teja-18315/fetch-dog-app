@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-// Import the background image and logo from the assets folder
 import backgroundImage from '../assets/12.jpeg';
-import logo from '../assets/fetch.png'; // Placeholder for logo image, update the path accordingly
+import logo from '../assets/fetch.png';
 
 const LoginPage = () => {
   const [name, setName] = useState('');
@@ -29,9 +27,8 @@ const LoginPage = () => {
       {/* Nav Bar */}
       <nav className="bg-[#D1C4A9] shadow-md py-4">
         <div className="container mx-auto flex justify-center items-center">
-          {/* Logo and title in the middle */}
           <div className="flex items-center">
-            <img src={logo} alt="Logo" className="h-8 w-12 mr-2" /> {/* Replace with your logo */}
+            <img src={logo} alt="Logo" className="h-8 w-12 mr-2" />
             <span className="text-xl font-bold text-gray-800">DogAdopt</span>
           </div>
         </div>

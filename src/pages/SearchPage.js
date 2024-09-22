@@ -4,12 +4,12 @@ import DogList from '../components/DogList';
 import Filters from '../components/Filters';
 import Pagination from '../components/Pagination';
 import { useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/12.jpeg'; // Add your background image path
-import logo from '../assets/fetch.png'; // Placeholder for logo, replace with your actual logo
+import backgroundImage from '../assets/12.jpeg';
+import logo from '../assets/fetch.png';
 
 const SearchPage = () => {
   const [dogs, setDogs] = useState([]);
-  const [favorites, setFavorites] = useState([]);  // State for storing favorite dog IDs
+  const [favorites, setFavorites] = useState([]);
   const [filters, setFilters] = useState({
     breed: [],
     zipCode: '',
@@ -22,7 +22,7 @@ const SearchPage = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalDogs, setTotalDogs] = useState(0);
-  const [match, setMatch] = useState(null);  // State for storing the match result
+  const [match, setMatch] = useState(null);
   const navigate = useNavigate();
 
   const fetchDogs = async (page = 1) => {
@@ -69,14 +69,14 @@ const SearchPage = () => {
   };
 
   const applyFilters = () => {
-    setCurrentPage(1);  // Reset page to 1 when applying filters
+    setCurrentPage(1);
     fetchDogs(1);
   };
 
   const handleLogout = async () => {
     try {
       await axios.post('https://frontend-take-home-service.fetch.com/auth/logout', {}, { withCredentials: true });
-      navigate('/');  // Redirect to the login page after logout
+      navigate('/'); 
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -85,9 +85,9 @@ const SearchPage = () => {
   // Add or remove dogs from the favorites list
   const addToFavorites = (dogId) => {
     if (favorites.includes(dogId)) {
-      setFavorites(favorites.filter(id => id !== dogId));  // Remove from favorites if already selected
+      setFavorites(favorites.filter(id => id !== dogId));
     } else {
-      setFavorites([...favorites, dogId]);  // Add to favorites
+      setFavorites([...favorites, dogId]);
     }
   };
 

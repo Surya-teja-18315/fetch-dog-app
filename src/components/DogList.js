@@ -8,8 +8,8 @@ const DogList = ({ dogs, addToFavorites, favorites }) => {
         <DogCard
           key={dog.id}
           dog={dog}
-          addToFavorites={addToFavorites}  // Passing addToFavorites function to DogCard
-          isFavorite={favorites.includes(dog.id)}  // Checking if the dog is in favorites
+          addToFavorites={addToFavorites}
+          isFavorite={favorites.includes(dog.id)}
         />
       ))}
     </div>
