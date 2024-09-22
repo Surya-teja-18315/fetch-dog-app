@@ -49,7 +49,7 @@ const Filters = ({ filters, setFilters, applyFilters }) => {
   }, [filters.state]);
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg mb-6">
+    <div className="p-4 bg-[#efeadd] rounded-lg mb-6">
       <h3 className="text-lg font-bold mb-4">Filters</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         

@@ -1,7 +1,7 @@
 import React from 'react';
 
 const DogCard = ({ dog, addToFavorites, isFavorite }) => (
-  <div className="p-4 bg-white shadow-md rounded-lg text-center">
+  <div className="p-4 bg-[#efeadd] shadow-md rounded-lg text-center">
     <img src={dog.img} alt={dog.name} className="w-full h-40 object-cover mb-4 rounded" />
     <h2 className="text-xl font-bold">{dog.name}</h2>
     <p>Breed: {dog.breed}</p>

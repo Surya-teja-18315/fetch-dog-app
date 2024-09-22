@@ -4,6 +4,8 @@ import DogList from '../components/DogList';
 import Filters from '../components/Filters';
 import Pagination from '../components/Pagination';
 import { useNavigate } from 'react-router-dom';
+import backgroundImage from '../assets/12.jpeg'; // Add your background image path
+import logo from '../assets/fetch.png'; // Placeholder for logo, replace with your actual logo
 
 const SearchPage = () => {
   const [dogs, setDogs] = useState([]);
@@ -74,7 +76,7 @@ const SearchPage = () => {
   const handleLogout = async () => {
     try {
       await axios.post('https://frontend-take-home-service.fetch.com/auth/logout', {}, { withCredentials: true });
-      navigate('/');
+      navigate('/');  // Redirect to the login page after logout
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -92,86 +94,92 @@ const SearchPage = () => {
   // Generate a match based on the selected favorite dogs
   const generateMatch = async () => {
     try {
-      // Get the matched dog ID
       const response = await axios.post('https://frontend-take-home-service.fetch.com/dogs/match', favorites, { withCredentials: true });
-      const matchedDogId = response.data.match;  // Store the matched dog ID
-      
-      // Fetch full dog details using the matched dog ID
+      const matchedDogId = response.data.match;
       const dogDetailsResponse = await axios.post('https://frontend-take-home-service.fetch.com/dogs', [matchedDogId], { withCredentials: true });
-      const matchedDogDetails = dogDetailsResponse.data[0];  // Get the first dog in the array (only one match)
-  
-      setMatch(matchedDogDetails);  // Set the full dog details in state
-  
+      const matchedDogDetails = dogDetailsResponse.data[0];
+      setMatch(matchedDogDetails);
     } catch (error) {
       console.error('Error generating match:', error.response ? error.response.data : error.message);
     }
   };
-  
 
   useEffect(() => {
     fetchDogs(currentPage);
   }, [currentPage]);
 
   return (
-    <div className="container mx-auto p-4">
-      <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
-        <h1 className="text-xl">Fetch Dog App</h1>
-        <button 
-          onClick={handleLogout} 
-          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
+    <div
+      className="min-h-screen bg-cover bg-fixed bg-center"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      {/* Nav Bar */}
+      <nav className="bg-[#D1C4A9] shadow-md py-4">
+        <div className="container mx-auto flex justify-between items-center">
+          {/* Logo and title in the middle */}
+          <div className="flex items-center">
+            <img src={logo} alt="Logo" className="h-8 w-12 mr-2 ml-5" />
+            <span className="text-xl font-bold text-gray-800">DogAdopt</span>
+          </div>
+          
+          {/* Logout Button */}
+          <button 
+            onClick={handleLogout} 
+            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition mr-7"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
-      <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
-      
-      {/* Display DogList with Add to Favorites functionality */}
       <div className="container mx-auto p-4">
-      {/* Nav and Filters omitted for brevity */}
-      <DogList 
-        dogs={dogs} 
-        addToFavorites={addToFavorites}  // Pass addToFavorites function
-        favorites={favorites}  // Pass favorites array
-      />
-      {/* Pagination and footer */}
-    </div>
-      
-      <Pagination 
-        currentPage={currentPage} 
-        totalResults={totalDogs} 
-        setCurrentPage={setCurrentPage} 
-        pageSize={25} 
-      />
+        <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+        
+        {/* Display DogList with Add to Favorites functionality */}
+        <DogList 
+          dogs={dogs} 
+          addToFavorites={addToFavorites}
+          favorites={favorites}
+        />
+        
+        <Pagination 
+          currentPage={currentPage} 
+          totalResults={totalDogs} 
+          setCurrentPage={setCurrentPage} 
+          pageSize={25} 
+        />
 
-      {/* Display favorite dogs and generate match button */}
-      <div className="mt-4">
-        <h2 className="text-lg font-bold">Favorite Dogs: {favorites.length}</h2>
-        {favorites.length > 0 && (
-          <button 
-            onClick={generateMatch} 
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            Generate Match
-          </button>
+        {/* Display favorite dogs and generate match button */}
+        <div className="mt-4">
+          <h2 className="text-lg font-bold">Favorite Dogs: {favorites.length}</h2>
+          {favorites.length > 0 && (
+            <button 
+              onClick={generateMatch} 
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              Generate Match
+            </button>
+          )}
+        </div>
+
+        {/* Display the match result if available */}
+        {match && (
+          <div className="mt-6 bg-green-100 p-4 rounded text-center">
+            <h3 className="text-lg font-bold">You’ve been matched with:</h3>
+            <img src={match.img} alt={match.name} className="w-32 h-32 object-cover rounded-full mx-auto mt-4" />
+            <h4 className="text-xl font-bold mt-2">{match.name}</h4>
+            <p>Breed: {match.breed}</p>
+            <p>Age: {match.age} years</p>
+            <p>Location: {match.zip_code}</p>
+          </div>
         )}
       </div>
 
-      {/* Display the match result if available */}
-      {match && (
-  <div className="mt-6 bg-green-100 p-4 rounded text-center">
-    <h3 className="text-lg font-bold">You’ve been matched with:</h3>
-    <img src={match.img} alt={match.name} className="w-32 h-32 object-cover rounded-full mx-auto mt-4" />
-    <h4 className="text-xl font-bold mt-2">{match.name}</h4>
-    <p>Breed: {match.breed}</p>
-    <p>Age: {match.age} years</p>
-    <p>Location: {match.zip_code}</p>
-  </div>
-)}
-
-
-      <footer className="mt-6 p-4 bg-gray-800 text-white text-center">
-        <p>© 2024 Fetch Dog App. All Rights Reserved.</p>
+      {/* Footer */}
+      <footer className="bg-[#D1C4A9] text-center py-4 mt-8 shadow-md">
+        <div className="container mx-auto">
+          <p className="text-gray-700">© 2024 DogAdopt. All Rights Reserved.</p>
+        </div>
       </footer>
     </div>
   );
