@@ -1,21 +1,35 @@
-// // components/SortBar.js
-// function SortBar({ sortField, setSortField, sortOrder, setSortOrder }) {
-//   return (
-//     <div className="flex flex-wrap md:flex-nowrap gap-4 mt-4">
-//       <div className="flex flex-col bg-gray-50 p-4 rounded-lg shadow-md w-full md:w-1/2">
-//         {/* <label className="font-medium mb-2">Sort By</label>
-//         <select
-//           value={sortField}
-//           onChange={(e) => setSortField(e.target.value)}
-//           className="p-2 border rounded-lg focus:outline-none focus:border-blue-500"
-//         >
-//           <option value="breed">Breed</option>
-//           <option value="name">Name</option>
-//           <option value="age">Age</option>
-//         </select> */}
-//       </div>
-//     </div>
-//   );
-// }
+import React from 'react';
 
-// export default SortBar;
+const Pagination = ({ currentPage, totalResults, setCurrentPage, pageSize }) => {
+  const totalPages = Math.ceil(totalResults / pageSize);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  return (
+    <div className="flex justify-center mt-4">
+      <button 
+        onClick={() => handlePageChange(currentPage - 1)} 
+        className="px-4 py-2 bg-gray-300 rounded-l hover:bg-gray-400"
+        disabled={currentPage === 1}
+      >
+        Previous
+      </button>
+      <span className="px-4 py-2 bg-gray-200">
+        {currentPage} of {totalPages}
+      </span>
+      <button 
+        onClick={() => handlePageChange(currentPage + 1)} 
+        className="px-4 py-2 bg-gray-300 rounded-r hover:bg-gray-400"
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </div>
+  );
+};
+
+export default Pagination;

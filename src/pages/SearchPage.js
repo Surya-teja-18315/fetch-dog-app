@@ -1,157 +1,180 @@
-// pages/SearchPage.js
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import DogCard from '../components/DogCard';
-import FilterBar from '../components/FilterBar';
-import SortBar from '../components/SortBar'; // Import the updated SortBar component
+import DogList from '../components/DogList';
+import Filters from '../components/Filters';
 import Pagination from '../components/Pagination';
+import { useNavigate } from 'react-router-dom';
 
-function SearchPage() {
+const SearchPage = () => {
   const [dogs, setDogs] = useState([]);
-  const [breeds, setBreeds] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [states, setStates] = useState([]);
+  const [favorites, setFavorites] = useState([]);  // State for storing favorite dog IDs
   const [filters, setFilters] = useState({
-    breeds: [],
+    breed: [],
+    zipCode: '',
+    ageMin: '',
+    ageMax: '',
+    sortBy: 'breed',
+    sortOrder: 'asc',
     city: '',
-    state: '',
-    zipCodes: [],
-    ageMin: 0,
-    ageMax: 15,
-    geoBoundingBox: null,
+    state: ''
   });
-  const [sortField, setSortField] = useState('breed'); // Default to sorting by breed
-  const [sortOrder, setSortOrder] = useState('asc'); // Default to alphabetical A-Z
-  const [page, setPage] = useState(0);
-  const [favorites, setFavorites] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalDogs, setTotalDogs] = useState(0);
+  const [match, setMatch] = useState(null);  // State for storing the match result
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchBreeds = async () => {
-      try {
-        const response = await axios.get('https://frontend-take-home-service.fetch.com/dogs/breeds', { withCredentials: true });
-        setBreeds(response.data);
-      } catch (error) {
-        console.error('Error fetching breeds', error);
+  const fetchDogs = async (page = 1) => {
+    try {
+      const params = {
+        breeds: filters.breed.length ? filters.breed : undefined,
+        zipCodes: filters.zipCode ? [filters.zipCode] : undefined,
+        ageMin: filters.ageMin,
+        ageMax: filters.ageMax,
+        size: 25,  // Number of dogs per page
+        from: (page - 1) * 25,
+        sort: `${filters.sortBy}:${filters.sortOrder}`,
+      };
+
+      // If city or state filters are applied, get location-based zip codes
+      if (filters.city || filters.state) {
+        const locationParams = {};
+        if (filters.city) locationParams.city = filters.city;
+        if (filters.state) locationParams.states = [filters.state];
+
+        const locationResponse = await axios.post('https://frontend-take-home-service.fetch.com/locations/search', locationParams, { withCredentials: true });
+        const zipCodes = locationResponse.data.results.map(loc => loc.zip_code);
+        params.zipCodes = zipCodes.length ? zipCodes : params.zipCodes;
       }
-    };
 
-    fetchBreeds();
-  }, []);
-
-  const fetchLocations = async () => {
-    try {
-      const response = await axios.post('https://frontend-take-home-service.fetch.com/locations/search', {
-        city: filters.city || undefined,
-        states: filters.state ? [filters.state] : undefined,
-        geoBoundingBox: filters.geoBoundingBox || undefined,
-        size: 100, // Adjust size as needed
-      }, { withCredentials: true });
-
-      setLocations(response.data.results);
-
-      // Extract unique states from the location data
-      const uniqueStates = Array.from(new Set(response.data.results.map(location => location.state)));
-      setStates(uniqueStates);
-
-      // Extract unique zip codes from the location data for dog search
-      const zipCodes = response.data.results.map(location => location.zip_code);
-      setFilters((prevFilters) => ({ ...prevFilters, zipCodes }));
-      
-    } catch (error) {
-      console.error('Error fetching locations', error);
-    }
-  };
-
-  const fetchDogs = async () => {
-    try {
+      // Fetch dogs based on the applied filters
       const response = await axios.get('https://frontend-take-home-service.fetch.com/dogs/search', {
-        params: {
-          breeds: filters.breeds.length ? filters.breeds : undefined,
-          zipCodes: filters.zipCodes.length ? filters.zipCodes : undefined,
-          ageMin: filters.ageMin,
-          ageMax: filters.ageMax,
-          sort: `${sortField}:${sortOrder}`, // Combine field and order for sorting
-          size: 10,
-          from: page * 10,
-        },
+        params,
         withCredentials: true,
       });
-      setDogs(response.data.resultIds);
+
+      const dogIds = response.data.resultIds;
+      setTotalDogs(response.data.total);
+
+      if (dogIds.length > 0) {
+        const dogData = await axios.post('https://frontend-take-home-service.fetch.com/dogs', dogIds, { withCredentials: true });
+        setDogs(dogData.data);
+      } else {
+        setDogs([]);  // No dogs found for the current filter
+      }
     } catch (error) {
-      console.error('Error fetching dogs', error);
+      console.error('Error fetching dogs:', error.response ? error.response.data : error.message);
     }
   };
 
-  const handleFavorite = (dogId) => {
-    setFavorites((prevFavorites) => 
-      prevFavorites.includes(dogId) ? prevFavorites.filter(id => id !== dogId) : [...prevFavorites, dogId]
-    );
+  const applyFilters = () => {
+    setCurrentPage(1);  // Reset page to 1 when applying filters
+    fetchDogs(1);
   };
 
-  const handleApplyFilters = () => {
-    fetchLocations();
-    fetchDogs();
-  };
-
-  // Logout functionality
   const handleLogout = async () => {
     try {
       await axios.post('https://frontend-take-home-service.fetch.com/auth/logout', {}, { withCredentials: true });
       navigate('/');
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error('Logout failed:', error);
     }
   };
 
+  // Add or remove dogs from the favorites list
+  const addToFavorites = (dogId) => {
+    if (favorites.includes(dogId)) {
+      setFavorites(favorites.filter(id => id !== dogId));  // Remove from favorites if already selected
+    } else {
+      setFavorites([...favorites, dogId]);  // Add to favorites
+    }
+  };
+
+  // Generate a match based on the selected favorite dogs
+  const generateMatch = async () => {
+    try {
+      // Get the matched dog ID
+      const response = await axios.post('https://frontend-take-home-service.fetch.com/dogs/match', favorites, { withCredentials: true });
+      const matchedDogId = response.data.match;  // Store the matched dog ID
+      
+      // Fetch full dog details using the matched dog ID
+      const dogDetailsResponse = await axios.post('https://frontend-take-home-service.fetch.com/dogs', [matchedDogId], { withCredentials: true });
+      const matchedDogDetails = dogDetailsResponse.data[0];  // Get the first dog in the array (only one match)
+  
+      setMatch(matchedDogDetails);  // Set the full dog details in state
+  
+    } catch (error) {
+      console.error('Error generating match:', error.response ? error.response.data : error.message);
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchDogs(currentPage);
+  }, [currentPage]);
+
   return (
-    <div className="relative min-h-screen bg-gray-100">
-      <img 
-        src="https://your-image-url.com/park-background.jpg" 
-        alt="Park Background"
-        className="absolute inset-0 w-full h-full object-cover opacity-20"
+    <div className="container mx-auto p-4">
+      <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
+        <h1 className="text-xl">Fetch Dog App</h1>
+        <button 
+          onClick={handleLogout} 
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </nav>
+
+      <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+      
+      {/* Display DogList with Add to Favorites functionality */}
+      <div className="container mx-auto p-4">
+      {/* Nav and Filters omitted for brevity */}
+      <DogList 
+        dogs={dogs} 
+        addToFavorites={addToFavorites}  // Pass addToFavorites function
+        favorites={favorites}  // Pass favorites array
       />
-      <div className="relative z-10 p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-center text-gray-800">Find Your Perfect Dog</h1>
-          <button
-            onClick={handleLogout}
-            className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+      {/* Pagination and footer */}
+    </div>
+      
+      <Pagination 
+        currentPage={currentPage} 
+        totalResults={totalDogs} 
+        setCurrentPage={setCurrentPage} 
+        pageSize={25} 
+      />
+
+      {/* Display favorite dogs and generate match button */}
+      <div className="mt-4">
+        <h2 className="text-lg font-bold">Favorite Dogs: {favorites.length}</h2>
+        {favorites.length > 0 && (
+          <button 
+            onClick={generateMatch} 
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
           >
-            Logout
+            Generate Match
           </button>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">Search Filters</h2>
-          <FilterBar
-            breeds={breeds}
-            locations={locations}
-            states={states}
-            filters={filters}
-            setFilters={setFilters}
-          />
-          <SortBar 
-            sortField={sortField} 
-            setSortField={setSortField} 
-            sortOrder={sortOrder} 
-            setSortOrder={setSortOrder} 
-          />
-          <button
-            onClick={handleApplyFilters}
-            className="w-full p-3 mt-4 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Apply Filters
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
-          {dogs.map((dogId) => (
-            <DogCard key={dogId} dogId={dogId} onFavorite={handleFavorite} />
-          ))}
-        </div>
+        )}
       </div>
+
+      {/* Display the match result if available */}
+      {match && (
+  <div className="mt-6 bg-green-100 p-4 rounded text-center">
+    <h3 className="text-lg font-bold">You’ve been matched with:</h3>
+    <img src={match.img} alt={match.name} className="w-32 h-32 object-cover rounded-full mx-auto mt-4" />
+    <h4 className="text-xl font-bold mt-2">{match.name}</h4>
+    <p>Breed: {match.breed}</p>
+    <p>Age: {match.age} years</p>
+    <p>Location: {match.zip_code}</p>
+  </div>
+)}
+
+
+      <footer className="mt-6 p-4 bg-gray-800 text-white text-center">
+        <p>© 2024 Fetch Dog App. All Rights Reserved.</p>
+      </footer>
     </div>
   );
-}
+};
 
 export default SearchPage;
