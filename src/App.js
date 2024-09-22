@@ -4,7 +4,7 @@ import LoginPage from './pages/LoginPage';
 import SearchPage from './pages/SearchPage';
 
 const App = () => (
-  <Router>
+  <Router basename="/fetch-dog-app">
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/search" element={<SearchPage />} />
