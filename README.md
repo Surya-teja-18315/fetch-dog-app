@@ -39,8 +39,10 @@ You need to have the following installed on your system:
    ```bash
    git clone https://github.com/Surya-teja-18315/fetch-dog-app.git
 
-2. ```bash cd fetch-dog-app
-3. ```bash npm install
+2. ```bash 
+    cd fetch-dog-app
+3. ```bash 
+    npm install
 4. **Start the development server**
     ```bash 
     npm start
