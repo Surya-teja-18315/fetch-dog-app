@@ -6,10 +6,7 @@ Welcome to **DogAdopt**, a web application that helps users find and adopt dogs 
 
 - [Technologies Used](#technologies-used)
 - [Setup Instructions](#setup-instructions)
-- [Project Structure](#project-structure)
-- [Available Scripts](#available-scripts)
 - [Features](#features)
-- [Deployment](#deployment)
 
 ---
 
